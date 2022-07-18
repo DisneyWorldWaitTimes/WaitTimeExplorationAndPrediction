@@ -1,17 +1,17 @@
 import pandas as pd
-import datetime
+import json
 
-ride_files = ['../../data/raw/7_dwarfs_train.csv', '../../data/raw/astro_orbiter.csv', '../../data/raw/barnstormer.csv',
-              '../../data/raw/big_thunder_mtn.csv', '../../data/raw/buzz_lightyear.csv',
-              '../../data/raw/carousel_of_progress.csv', '../../data/raw/dumbo.csv',
-              '../../data/raw/haunted_mansion.csv', '../../data/raw/it_s_a_small_world.csv',
-              '../../data/raw/jungle_cruise.csv', '../../data/raw/mad_tea_party.csv', '../../data/raw/magic_carpets.csv',
-              '../../data/raw/main_st_vehicles.csv', '../../data/raw/peoplemover.csv',
-              '../../data/raw/peter_pan_s_flight.csv',
-              '../../data/raw/pirates_of_caribbean.csv', '../../data/raw/regal_carrousel.csv',
-              '../../data/raw/space_mountain.csv',
-              '../../data/raw/splash_mountain.csv', '../../data/raw/tom_land_speedway.csv',
-              '../../data/raw/winnie_the_pooh.csv']
+ride_files = ['data/raw/7_dwarfs_train.csv', 'data/raw/astro_orbiter.csv', 'data/raw/barnstormer.csv',
+              'data/raw/big_thunder_mtn.csv', 'data/raw/buzz_lightyear.csv',
+              'data/raw/carousel_of_progress.csv', 'data/raw/dumbo.csv',
+              'data/raw/haunted_mansion.csv', 'data/raw/it_s_a_small_world.csv',
+              'data/raw/jungle_cruise.csv', 'data/raw/mad_tea_party.csv', 'data/raw/magic_carpets.csv',
+              'data/raw/main_st_vehicles.csv', 'data/raw/peoplemover.csv',
+              'data/raw/peter_pan_s_flight.csv',
+              'data/raw/pirates_of_caribbean.csv', 'data/raw/regal_carrousel.csv',
+              'data/raw/space_mountain.csv',
+              'data/raw/splash_mountain.csv', 'data/raw/tom_land_speedway.csv',
+              'data/raw/winnie_the_pooh.csv']
 
 ride_names = ['Seven Dwarfs Mine Train', 'Astro Orbiter', 'The Barnstormer', 'Big Thunder Mountain Railroad',
               "Buzz Lightyear's Space Ranger Spin", "Walt Disney's Carousel of Progress",
@@ -22,6 +22,8 @@ ride_names = ['Seven Dwarfs Mine Train', 'Astro Orbiter', 'The Barnstormer', 'Bi
               'Pirates of the Caribbean', 'Prince Charming Regal Carrousel', 'Space Mountain', 'Splash Mountain',
               'Tomorrowland Speedway', 'The Many Adventures of Winnie the Pooh']
 
+with open("src/data/dtypes.json") as json_file:
+    dtypes = json.load(json_file)
 
 def convertToInt8(df):
     """
@@ -158,6 +160,17 @@ def dateCleaning(df):
     df.drop("Age_of_ride_total", axis=1, inplace=True)
 
 
+def combineCovidData(rideData):
+    covidData = pd.read_csv("data/raw/United_States_COVID-19_Cases_and_Deaths_by_State_over_Time.csv")
+
+    covidData = covidData.groupby("DATE")["new_case"].sum().reset_index()
+    covidData["DATE"] = pd.to_datetime(covidData["DATE"])
+    rides_with_covid = rideData.merge(covidData, on="DATE", how='left')
+    rides_with_covid["new_case"] = rides_with_covid["new_case"].fillna(0)
+
+    return rides_with_covid
+
+
 def combineMetadataAndUpdate(ride_files, ride_names):
     """
         Combine all metadata together with respective dates & rides
@@ -176,8 +189,8 @@ def combineMetadataAndUpdate(ride_files, ride_names):
             Returns updated dataframe with all rides merged with their respective daily park & ride metadata
 
         """
-    park_metadata = pd.read_csv('../../data/raw/park_metadata.csv')
-    data_world = pd.read_excel("../../data/raw/WDW_Ride_Data_DW.xlsx")
+    park_metadata = pd.read_csv("data/raw/park_metadata.csv")
+    data_world = pd.read_excel("data/raw/WDW_Ride_Data_DW.xlsx")
     mk_dw = data_world[data_world["Park_location"] == "MK"]
 
     park_metadata = stringPercentToInt(park_metadata)
@@ -189,13 +202,17 @@ def combineMetadataAndUpdate(ride_files, ride_names):
 
     dateCleaning(all_rides)  # clean date columns
 
+
     all_rides['DATE'] = all_rides['date']
     park_metadata['DATE'] = pd.to_datetime(park_metadata["DATE"])
     print("ALL RIDES SHAPE: ", all_rides.shape)
-    combined_data = all_rides.merge(park_metadata, how="left", on="DATE")
-    combined_data = combined_data.drop(columns=['DATE'])
-    print("COMBINED DATA SHAPE: ", combined_data.shape)
 
+    combined_data = all_rides.merge(park_metadata, how="left", on="DATE")
+    combined_data = combineCovidData(combined_data)
+    combined_data = combined_data.drop(columns=['DATE', "WDWTICKETSEASON", "Park_location",
+                                                "Ride_type_all", "Age_interest_all"])
+
+    print("COMBINED DATA SHAPE: ", combined_data.shape)
 
     return combined_data
 
@@ -220,11 +237,5 @@ def seperateYearsAndWriteToCSV(df, year):
     """
 
     df_year = df[df['date'].dt.year == year]
-    df_year.to_csv(f'../../data/interim/rideData{year}.csv', compression='gzip')
+    df_year.to_csv(f'data/interim/rideData{year}.csv', compression='gzip')
 
-    # months = {1: "jan", 2: "feb", 3: "mar", 4: "apr", 5: "may", 6: "jun",
-    #           7: "jul", 8: "aug", 9: "sept", 10: "oct", 11: "nov", 12: "dec"}
-    #
-    # for x in range(1, 13):
-    #     df_month = df_year[df_year['date'].dt.month == x]
-    #     df_month.to_csv(f'../../data/interim/rideData{year}_{months[x]}.csv', compression='gzip')

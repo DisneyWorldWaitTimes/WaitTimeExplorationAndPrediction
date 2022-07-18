@@ -4,6 +4,7 @@ import logging
 from pathlib import Path
 from dotenv import find_dotenv, load_dotenv
 from update_and_split_data import combineMetadataAndUpdate, seperateYearsAndWriteToCSV, ride_files, ride_names
+from feature_engineering import featureEngineering
 
 # @click.command()
 # @click.argument('input_filepath', type=click.Path(exists=True))
@@ -18,6 +19,8 @@ def main():
     combined_data = combineMetadataAndUpdate(ride_files, ride_names)
     for year in range(2015, 2022):
         seperateYearsAndWriteToCSV(combined_data, year)
+
+    featureEngineering(2015, 2019, 2020, 2021)
 
 
 if __name__ == '__main__':
