@@ -25,31 +25,6 @@ ride_names = ['Seven Dwarfs Mine Train', 'Astro Orbiter', 'The Barnstormer', 'Bi
 with open("src/data/dtypes.json") as json_file:
     dtypes = json.load(json_file)
 
-def convertToInt8(df):
-    """
-    Converts int columns with finite values to int8
-
-    Parameters
-    ----------
-    df : DataFrame
-        The DataFrame to parse (in our case the park_metadata dataframe)
-
-    Returns
-    -------
-    df
-        Updated df with compressed dtypes
-
-    """
-    for col in df.columns:
-        if df[col].dtype == 'int64' or df[col].dtype == 'int32':
-            if sorted(df[col].unique()) == [0, 1]:
-                df[col] = df[col].astype('int8')
-
-    for x in ['DAYOFWEEK', 'DAYOFYEAR', 'WEEKOFYEAR', 'MONTHOFYEAR']:
-        df[x] = df[x].astype('int8')
-
-    return df
-
 
 def stringPercentToInt(df):
     """
@@ -194,7 +169,6 @@ def combineMetadataAndUpdate(ride_files, ride_names):
     mk_dw = data_world[data_world["Park_location"] == "MK"]
 
     park_metadata = stringPercentToInt(park_metadata)
-    park_metadata = convertToInt8(park_metadata)
     yesNoToBool(mk_dw)  # convert Yes/No columns to boolean
 
     all_rides = combineRidesAndName(ride_files,

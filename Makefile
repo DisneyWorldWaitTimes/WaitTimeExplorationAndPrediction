@@ -28,7 +28,7 @@ requirements: test_environment
 ## Make Dataset
 data: requirements
 	$(PYTHON_INTERPRETER) src/data/make_dataset.py # data/raw data/processed
-	$(PYTHON_INTERPRETER) src/data/feature_engineering.py 2015 2019 2020 2021
+	$(PYTHON_INTERPRETER) src/data/feature_engineering.py
 
 ## Delete all compiled Python files
 clean:
