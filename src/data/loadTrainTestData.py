@@ -21,8 +21,13 @@ def loadTrainTestPostedWaitTimes():
 
             How to use:
 
-            import loadTrainTestPostedWaitTimes from loadTrainTestData
-            X_train_posted, X_test_posted, y_train_posted, y_test_posted = loadTrainTestPostedWaitTimes()
+            import importlib.util
+
+            spec = importlib.util.spec_from_file_location("loadTrainTestPostedWaitTimes", "src/data/loadTrainTestData.py")
+            loadTrainPosted = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(loadTrainPosted)
+
+            X_train_posted, X_test_posted, y_train_posted, y_test_posted = loadTrainPosted.loadTrainTestPostedWaitTimes()
 
             Parameters
             ----------
@@ -76,8 +81,13 @@ def loadTrainTestActualWaitTimes():
 
             How to use:
 
-            import loadTrainTestActualWaitTimes from loadTrainTestData
-            X_train_actual, X_test_actual, y_train_actual, y_test_actual = loadTrainTestActualWaitTimes()
+            import importlib.util
+
+            spec = importlib.util.spec_from_file_location("loadTrainTestActualWaitTimes", "src/data/loadTrainTestData.py")
+            loadTrainActual = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(loadTrainActual)
+
+            X_train_actual, X_test_actual, y_train_actual, y_test_actual = loadTrainPosted.loadTrainTestActualWaitTimes()
 
             Parameters
             ----------
