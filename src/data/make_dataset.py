@@ -17,10 +17,10 @@ def main():
     logger.info('making final data set from raw data')
 
     combined_data = combineMetadataAndUpdate(ride_files, ride_names)
-    for year in range(2015, 2022):
-        seperateYearsAndWriteToCSV(combined_data, year)
+    # for year in range(2015, 2022):
+    #     seperateYearsAndWriteToCSV(combined_data, year)
 
-    featureEngineering(2015, 2019, 2020, 2021)
+    # featureEngineering(2015, 2019, 2020, 2021)
 
 
 if __name__ == '__main__':

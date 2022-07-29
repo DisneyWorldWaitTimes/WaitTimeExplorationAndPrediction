@@ -2,17 +2,12 @@ import json
 
 import pandas as pd
 
-bool_dtypes = [
-    "HOLIDAY", "WDWevent", "WDWrace", "MKevent", "EPevent", "HSevent",
-    "AKevent", "MKEMHMORN", "MKEMHMYEST", "MKEMHMTOM", "MKEMHEVE",
-    "MKEMHEYEST","MKEMHETOM", "EPEMHMORN", "EPEMHMYEST","EPEMHMTOM",
-    "EPEMHEVE", "EPEMHEYEST", "EPEMHETOM",   "HSEMHMORN", "HSEMHMYEST",
-    "HSEMHMTOM", "HSEMHEVE", "HSEMHEYEST", "HSEMHETOM",  "AKEMHMORN",
-    "AKEMHMYEST", "AKEMHMTOM", "AKEMHEVE", "AKEMHEYEST", "AKEMHETOM"
-]
 
-with open("data/processed/dtypes_parsed.json") as json_file:
-    dtypes = json.load(json_file)
+def setup():
+    with open("data/processed/dtypes_parsed.json") as json_file:
+        dtypes = json.load(json_file)
+
+    return dtypes
 
 
 def loadTrainTestPostedWaitTimes():
@@ -43,6 +38,7 @@ def loadTrainTestPostedWaitTimes():
     parse_dates = ['date', 'datetime']
     X_train_list = []
     y_train_list = []
+    dtypes = setup()
 
     for year in range(2015, 2022):
 
@@ -101,6 +97,7 @@ def loadTrainTestActualWaitTimes():
 
         """
     parse_dates = ['date', 'datetime']
+    dtypes = setup()
 
     rideDataDf_trainX = pd.read_csv(f'data/processed/Xtrain_actualtimes.csv', dtype=dtypes,
                                 parse_dates=parse_dates, compression='gzip')
@@ -113,3 +110,5 @@ def loadTrainTestActualWaitTimes():
 
     return rideDataDf_trainX, rideDataDf_testX, rideDataDf_trainY, rideDataDf_testY
 
+
+loadTrainTestPostedWaitTimes()

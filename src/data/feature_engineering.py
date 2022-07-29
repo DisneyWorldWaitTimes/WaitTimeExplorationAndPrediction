@@ -1,37 +1,38 @@
 import numpy as np
 import pandas as pd
+from sklearn.feature_selection import VarianceThreshold
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.model_selection import train_test_split
 import json
 
 categoricalCols = ["WDW_TICKET_SEASON", "SEASON", "HOLIDAYN",
-                           "WDWRaceN", "WDWeventN", "WDWSEASON",
-                           "MKeventN", "EPeventN", "HSeventN", "AKeventN",
-                           "HOLIDAYJ", "Ride_name", "Park_area",
-                           "MKPRDDN", "MKPRDNN", "MKFIREN",
-                           "EPFIREN", "HSPRDDN", "HSFIREN",
-                           "HSSHWNN", "AKPRDDN", "AKFIREN", "AKSHWNN",
-                           "Wind Quality Code", "Wind Type Code", "Wind Speed Quality",
-                            "Cloud Quality Code", "Cloud Determination Code", "CAVOK Code",
-                            "Visibiliy Quality Code", "Visibility Variability Code",
-                            "Visibility Quality Variability Code", "Temperature Quality Code"]
+                   "WDWRaceN", "WDWeventN", "WDWSEASON",
+                   "MKeventN", "EPeventN", "HSeventN", "AKeventN",
+                   "HOLIDAYJ", "Ride_name", "Park_area",
+                   "MKPRDDN", "MKPRDNN", "MKFIREN",
+                   "EPFIREN", "HSPRDDN", "HSFIREN",
+                   "HSSHWNN", "AKPRDDN", "AKFIREN", "AKSHWNN",
+                   "Wind Quality Code", "Wind Type Code", "Wind Speed Quality",
+                   "Cloud Quality Code", "Cloud Determination Code", "CAVOK Code",
+                   "Visibiliy Quality Code", "Visibility Variability Code",
+                   "Visibility Quality Variability Code", "Temperature Quality Code"]
 bool_dtypes = [
     "Ride_type_thrill", "Ride_type_spinning", "Ride_type_slow",
     "Ride_type_small_drops", "Ride_type_big_drops", "Ride_type_dark",
     "Ride_type_scary", "Ride_type_water", "Fast_pass",
     "Classic", "Age_interest_preschoolers", "Age_interest_kids",
     "Age_interest_tweens", "Age_interest_teens", "Age_interest_adults",
-    "HOLIDAY", "WDWevent", "WDWrace", "MKevent", "EPevent", "HSevent", 
+    "HOLIDAY", "WDWevent", "WDWrace", "MKevent", "EPevent", "HSevent",
     "AKevent", "MKEMHMORN", "MKEMHMYEST", "MKEMHMTOM", "MKEMHEVE",
-    "MKEMHEYEST","MKEMHETOM", "EPEMHMORN", "EPEMHMYEST","EPEMHMTOM",
-    "EPEMHEVE", "EPEMHEYEST", "EPEMHETOM",   "HSEMHMORN", "HSEMHMYEST",
-    "HSEMHMTOM", "HSEMHEVE", "HSEMHEYEST", "HSEMHETOM",  "AKEMHMORN",
+    "MKEMHEYEST", "MKEMHETOM", "EPEMHMORN", "EPEMHMYEST", "EPEMHMTOM",
+    "EPEMHEVE", "EPEMHEYEST", "EPEMHETOM", "HSEMHMORN", "HSEMHMYEST",
+    "HSEMHMTOM", "HSEMHEVE", "HSEMHEYEST", "HSEMHETOM", "AKEMHMORN",
     "AKEMHMYEST", "AKEMHMTOM", "AKEMHEVE", "AKEMHEYEST", "AKEMHETOM"
 ]
 parse_dates = ['date', 'datetime']
 parse_times = ["MKOPEN", "MKCLOSE", "MKEMHOPEN", "MKEMHCLOSE",
                "MKOPENYEST", "MKCLOSEYEST", "MKOPENTOM",
-               "MKCLOSETOM","EPOPEN", "EPCLOSE", "EPEMHOPEN",
+               "MKCLOSETOM", "EPOPEN", "EPCLOSE", "EPEMHOPEN",
                "EPEMHCLOSE", "EPOPENYEST", "EPCLOSEYEST",
                "EPOPENTOM", "EPCLOSETOM", "HSOPEN", "HSCLOSE",
                "HSEMHOPEN", "HSEMHCLOSE", "HSOPENYEST", "HSCLOSEYEST",
@@ -43,14 +44,14 @@ parse_times = ["MKOPEN", "MKCLOSE", "MKEMHOPEN", "MKEMHCLOSE",
                "HSFIRET2", "HSSHWNT1", "HSSHWNT2", "AKPRDDT1",
                "AKPRDDT2", "AKSHWNT1", "AKSHWNT2"]
 
+park_metadata_cols = ["WEEKOFYEAR", "SEASON", "HOLIDAYPX", "HOLIDAYM", "HOLIDAYN", "HOLIDAY",
+                      "WDWRaceN", "WDWeventN", "WDWevent",
+                      "WDWrace", "WDWSEASON", "WDWMAXTEMP",
+                      "WDWMINTEMP", "WDWMEANTEMP", "MKeventN",
+                      "MKevent", "EPeventN", "EPevent",
+                      "HSeventN", "HSevent", "AKeventN", "AKevent",
+                      "HOLIDAYJ", "inSession", "inSession_Enrollment", "inSession_wdw"]
 
-park_metadata_cols = ["WEEKOFYEAR","SEASON", "HOLIDAYPX", "HOLIDAYM", "HOLIDAYN", "HOLIDAY",
-                    "WDWRaceN", "WDWeventN", "WDWevent",
-                    "WDWrace", "WDWSEASON", "WDWMAXTEMP",
-                    "WDWMINTEMP", "WDWMEANTEMP", "MKeventN",
-                    "MKevent", "EPeventN", "EPevent",
-                    "HSeventN", "HSevent", "AKeventN", "AKevent",
-                    "HOLIDAYJ", "inSession", "inSession_Enrollment", "inSession_wdw"]
 
 def cleanStringData(df, cols):
     """
@@ -80,14 +81,17 @@ def cleanStringData(df, cols):
     return df
 
 
-def oneHotEncoding(df, cols):
+def oneHotEncoding(df_train, df_test, cols):
     """
         Takes cleaned categorical columns and applies one-hot encoding to them
 
         Parameters
         ----------
-        df : dataframe
-            dataframe with all the ride data
+        df_train : dataframe
+            dataframe with all the training ride data
+
+        df_test : dataframe
+            dataframe with all the testing ride data
 
         cols : list
             list of categorical columns to encode
@@ -99,20 +103,51 @@ def oneHotEncoding(df, cols):
     """
     for col in reversed(cols):
         try:
-            df[col] = df[col].astype("category")
-        except KeyError as e:
+            df_train[col] = df_train[col].astype("category")
+            df_test[col] = df_test[col].astype("category")
+
+        except KeyError:
             cols.remove(col)
 
     # Create an instance of One-hot-encoder
     enc = OneHotEncoder()
-    enc_data = pd.DataFrame(enc.fit_transform(df[cols]).toarray(), dtype=bool)
-    enc_data.columns = enc.get_feature_names_out()
+    enc_data_train = pd.DataFrame(enc.fit_transform(df_train[cols]).toarray(), dtype=bool)
+    enc_data_train.columns = enc.get_feature_names_out()
+
+    enc_data_test = pd.DataFrame(enc.transform(df_test[cols]).toarray(), dtype=bool)
+    enc_data_test.columns = enc.get_feature_names_out()
 
     # Merge with main
-    New_df = df.join(enc_data)
-    New_df = New_df.drop(columns=cols)
+    New_df_train = df_train.join(enc_data_train)
+    New_df_train = New_df_train.drop(columns=cols)
 
-    return New_df
+    New_df_test = df_test.join(enc_data_test)
+    New_df_test = New_df_test.drop(columns=cols)
+
+    return New_df_train, New_df_test
+
+
+def setVarianceThreshold(X_train, X_test, threshold, data_type):
+    X = pd.concat([X_train, X_test], axis=0)
+    print("X SHAPE: ", X.shape)
+
+    X_dtype = X.select_dtypes(include=[data_type]).reset_index(drop=True)
+    print("X NUM SHAPE: ", X_dtype.shape)
+
+    var_thr = VarianceThreshold(threshold=threshold)  # Removing both constant and quasi-constant
+    var_thr.fit(X_dtype)
+
+    concol = [column for column in X_dtype.columns
+              if column not in X_dtype.columns[var_thr.get_support()]]
+
+    del var_thr, X_dtype
+
+    print("DROPPING BOOL: ", concol)
+
+    X_train.drop(concol, axis=1, inplace=True)
+    X_test.drop(concol, axis=1, inplace=True)
+
+    return X_train, X_test
 
 
 def convertHours(x):
@@ -131,11 +166,11 @@ def convertHours(x):
         """
     try:
         if int(x[:2]) >= 24:
-            if int(x[:2])-24 < 10:
-                x = x.replace(x[:2], str(int(x[:2])-24))
-                x = "0"+x
+            if int(x[:2]) - 24 < 10:
+                x = x.replace(x[:2], str(int(x[:2]) - 24))
+                x = "0" + x
             else:
-                x = x.replace(x[:2], str(int(x[:2])-24))
+                x = x.replace(x[:2], str(int(x[:2]) - 24))
         return x
     except TypeError:
         return x
@@ -156,7 +191,8 @@ def trainTestSplit(year):
                Returns X/y train/test for actual and posted wait times respectively
     """
 
-    rideData = pd.read_csv(f'data/interim/RideData{year}Weather.csv', compression='gzip', dtype=dtypes, parse_dates=parse_dates)
+    rideData = pd.read_csv(f'data/interim/RideData{year}Weather.csv', compression='gzip', dtype=dtypes,
+                           parse_dates=parse_dates)
     rideData = rideData.dropna(subset=park_metadata_cols, how='all', axis=0)
 
     rideDataActual = rideData[~np.isnan(rideData["SACTMIN"])]
@@ -166,7 +202,7 @@ def trainTestSplit(year):
     y_actual = rideDataActual["SACTMIN"]
 
     X_train_actual, X_test_actual, y_train_actual, y_test_actual = train_test_split(X_actual, y_actual,
-                                                                 test_size=0.33, random_state=42)
+                                                                                    test_size=0.33, random_state=42)
 
     X_posted = rideDataPosted.drop(columns=["SPOSTMIN", "SACTMIN"])
     y_posted = rideDataPosted["SPOSTMIN"]
@@ -175,7 +211,7 @@ def trainTestSplit(year):
                                                                                     test_size=0.33, random_state=42)
 
     return [X_train_actual, X_test_actual, y_train_actual, y_test_actual], \
-               [X_train_posted, X_test_posted, y_train_posted, y_test_posted]
+           [X_train_posted, X_test_posted, y_train_posted, y_test_posted]
 
 
 def encodeTrainAndTest(posted=True):
@@ -198,9 +234,16 @@ def encodeTrainAndTest(posted=True):
     y_train = pd.concat(allYearsTrain_y, ignore_index=True)
     y_test = pd.concat(allYearsTest_y, ignore_index=True)
 
-    encodedX = []
+    del allYearsTrain_X, allYearsTest_X, allYearsTrain_y, allYearsTest_y
+
+    cleanX = []
     for df in [X_train, X_test]:
-        df[bool_dtypes] = df[bool_dtypes].astype("bool")
+        if df is X_train:
+            print("TRAIN")
+        else:
+            print("TEST")
+
+        # df[bool_dtypes].astype("bool", copy=False)
 
         for time_col in parse_times:
             try:
@@ -214,18 +257,17 @@ def encodeTrainAndTest(posted=True):
                 continue
 
         dfClean = cleanStringData(df, categoricalCols)
+        cleanX.append(dfClean)
 
-        dfEncoded = oneHotEncoding(dfClean, categoricalCols)
+    X_train, X_test = oneHotEncoding(cleanX[0], cleanX[1], categoricalCols)
 
-        encodedX.append(dfEncoded)
+    del dfClean, cleanX
 
+    X_train, X_test = setVarianceThreshold(X_train, X_test, 0.05, np.number)
+    X_train, X_test = setVarianceThreshold(X_train, X_test, 0, "bool")
 
-    return encodedX[0], encodedX[1], y_train, y_test
+    return X_train, X_test, y_train, y_test
 
-
-def writeToChunkedCsvs(df, chunks, train=True, posted=True):
-    for grp, each_csv in df.groupby(df.index // 4):
-        each_csv.to_csv(f"test_{grp}.csv", index=False)
 
 if __name__ == '__main__':
     with open("data/interim/dtypes.json") as json_file:
@@ -241,11 +283,10 @@ if __name__ == '__main__':
 
         X_train_posted["POSTED_WAIT"] = y_train_posted
         X_train_posted[X_train_posted["date"].dt.year == year].to_csv(f"data/processed/All_train_postedtimes{year}.csv",
-                                                                     index=False, compression='gzip')
+                                                                      index=False, compression='gzip')
         X_test_posted["POSTED_WAIT"] = y_test_posted
         X_test_posted[X_test_posted["date"].dt.year == year].to_csv(f"data/processed/All_test_postedtimes{year}.csv",
-                                                                     index=False, compression='gzip')
-
+                                                                    index=False, compression='gzip')
 
     X_train_actual.to_csv("data/processed/Xtrain_actualtimes.csv", compression='gzip')
     X_test_actual.to_csv("data/processed/Xtest_actualtimes.csv", compression='gzip')

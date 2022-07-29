@@ -1,5 +1,6 @@
 import pandas as pd
 import json
+from sklearn.feature_selection import VarianceThreshold
 
 ride_files = ['data/raw/7_dwarfs_train.csv', 'data/raw/astro_orbiter.csv', 'data/raw/barnstormer.csv',
               'data/raw/big_thunder_mtn.csv', 'data/raw/buzz_lightyear.csv',
@@ -22,7 +23,7 @@ ride_names = ['Seven Dwarfs Mine Train', 'Astro Orbiter', 'The Barnstormer', 'Bi
               'Pirates of the Caribbean', 'Prince Charming Regal Carrousel', 'Space Mountain', 'Splash Mountain',
               'Tomorrowland Speedway', 'The Many Adventures of Winnie the Pooh']
 
-with open("src/data/dtypes.json") as json_file:
+with open("../src/data/dtypes.json") as json_file:
     dtypes = json.load(json_file)
 
 
