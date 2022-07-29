@@ -312,10 +312,8 @@ def convertHours(x):
 
 def setVarianceThreshold(X_train, X_test, threshold, data_type):
     X = pd.concat([X_train, X_test], axis=0)
-    print("X SHAPE: ", X.shape)
 
     X_dtype = X.select_dtypes(include=[data_type]).reset_index(drop=True)
-    print(f"X {data_type} SHAPE: ", X_dtype.shape)
 
     var_thr = VarianceThreshold(threshold=threshold)  # Removing both constant and quasi-constant
     var_thr.fit(X_dtype)
@@ -325,8 +323,10 @@ def setVarianceThreshold(X_train, X_test, threshold, data_type):
 
     del var_thr, X_dtype
 
-    print(f"DROPPING {data_type}: ", concol)
+    if "Weather Type" in concol:
+        concol.remove("Weather Type")
 
+    print(f"DROPPING {data_type}: ", concol)
     X_train.drop(concol, axis=1, inplace=True)
     X_test.drop(concol, axis=1, inplace=True)
 
@@ -354,6 +354,8 @@ def trainTestSplit(year):
     rideDataActual = rideData[~np.isnan(rideData["SACTMIN"])]
     rideDataPosted = rideData[~np.isnan(rideData["SPOSTMIN"])]
 
+    del rideData
+
     X_actual = rideDataActual.drop(columns=["SPOSTMIN", "SACTMIN"])
     y_actual = rideDataActual["SACTMIN"]
 
@@ -366,7 +368,7 @@ def trainTestSplit(year):
     X_train_posted, X_test_posted, y_train_posted, y_test_posted = train_test_split(X_posted, y_posted,
                                                                                     test_size=0.33, random_state=42)
 
-    del rideData, rideDataActual, rideDataPosted, X_actual, X_posted, y_actual, y_posted
+    del rideDataActual, rideDataPosted, X_actual, X_posted, y_actual, y_posted
 
     return [X_train_actual, X_test_actual, y_train_actual, y_test_actual], \
                [X_train_posted, X_test_posted, y_train_posted, y_test_posted]
@@ -427,7 +429,6 @@ if __name__ == '__main__':
     combined_data = combineMetadataAndUpdate(ride_files, ride_names)
     for year in range(2015, 2022):
         weatherData(combined_data, year)
-        # seperateYearsAndWriteToCSV(combined_data, year)
 
     del combined_data, year
 

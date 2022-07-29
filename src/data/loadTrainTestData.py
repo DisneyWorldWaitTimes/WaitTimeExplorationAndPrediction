@@ -4,7 +4,7 @@ import pandas as pd
 
 
 def setup():
-    with open("data/processed/dtypes_parsed.json") as json_file:
+    with open("../data/processed/dtypes_parsed.json") as json_file:
         dtypes = json.load(json_file)
 
     return dtypes
@@ -42,7 +42,7 @@ def loadTrainTestPostedWaitTimes():
 
     for year in range(2015, 2022):
 
-        rideData = pd.read_csv(f'data/processed/All_train_postedtimes{year}.csv', dtype=dtypes,
+        rideData = pd.read_csv(f'../data/processed/All_train_postedtimes{year}.csv', dtype=dtypes,
                                parse_dates=parse_dates, compression='gzip')
         rideDataX = rideData.drop(columns=["POSTED_WAIT"])
         rideDataY = rideData["POSTED_WAIT"]
@@ -57,7 +57,7 @@ def loadTrainTestPostedWaitTimes():
     y_test_list = []
 
     for year in range(2015, 2022):
-        rideData = pd.read_csv(f'data/processed/All_test_postedtimes{year}.csv', dtype=dtypes,
+        rideData = pd.read_csv(f'../data/processed/All_test_postedtimes{year}.csv', dtype=dtypes,
                                parse_dates=parse_dates, compression='gzip')
         rideDataX = rideData.drop(columns=["POSTED_WAIT"])
         rideDataY = rideData["POSTED_WAIT"]
@@ -99,16 +99,13 @@ def loadTrainTestActualWaitTimes():
     parse_dates = ['date', 'datetime']
     dtypes = setup()
 
-    rideDataDf_trainX = pd.read_csv(f'data/processed/Xtrain_actualtimes.csv', dtype=dtypes,
+    rideDataDf_trainX = pd.read_csv(f'../data/processed/Xtrain_actualtimes.csv', dtype=dtypes,
                                 parse_dates=parse_dates, compression='gzip')
 
-    rideDataDf_trainY = pd.read_csv(f'data/processed/ytrain_actualtimes.csv', dtype=dtypes, compression='gzip')
+    rideDataDf_trainY = pd.read_csv(f'../data/processed/ytrain_actualtimes.csv', dtype=dtypes, compression='gzip')
 
-    rideDataDf_testX = pd.read_csv(f'data/processed/Xtest_actualtimes.csv', dtype=dtypes,
+    rideDataDf_testX = pd.read_csv(f'../data/processed/Xtest_actualtimes.csv', dtype=dtypes,
                                 parse_dates=parse_dates, compression='gzip')
-    rideDataDf_testY = pd.read_csv(f'data/processed/ytrain_actualtimes.csv', dtype=dtypes, compression='gzip')
+    rideDataDf_testY = pd.read_csv(f'../data/processed/ytrain_actualtimes.csv', dtype=dtypes, compression='gzip')
 
     return rideDataDf_trainX, rideDataDf_testX, rideDataDf_trainY, rideDataDf_testY
-
-
-loadTrainTestPostedWaitTimes()
