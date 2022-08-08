@@ -13,3 +13,5 @@ pathlib~=1.0.1
 numpy~=1.21.5
 scikit-learn~=1.0.2
 setuptools~=57.4.0
+xgboost
+swifter
