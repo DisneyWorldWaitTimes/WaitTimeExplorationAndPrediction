@@ -65,8 +65,8 @@ def loadTrainTestPostedWaitTimes():
         X_test_list.append(rideDataX)
         y_test_list.append(rideDataY)
 
-    rideDataDf_testX = pd.concat(X_train_list, ignore_index=True)
-    rideDataDf_testY = pd.concat(y_train_list, ignore_index=True)
+    rideDataDf_testX = pd.concat(X_test_list, ignore_index=True)
+    rideDataDf_testY = pd.concat(y_test_list, ignore_index=True)
 
     return rideDataDf_trainX, rideDataDf_testX, rideDataDf_trainY, rideDataDf_testY
 
