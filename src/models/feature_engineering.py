@@ -108,9 +108,6 @@ def data_preparation_for_pipeline(X_train, X_test, y_train, y_test):
     X_train_clean = X_train_impute.drop(columns=['date', 'datetime', 'Unnamed: 0'])
     X_test_clean = X_test_impute.drop(columns=['date', 'datetime', 'Unnamed: 0'])
 
-    print(X_train_clean.shape)
-    print(X_test_clean.shape)
-
     return X_train_clean, X_test_clean, y_train, y_test
 
 
@@ -118,6 +115,7 @@ def feature_engineering(input_dir):
     X_train, X_test, y_train, y_test = load_train_test_posted_wait_times(input_dir)
     X_train_clean, X_test_clean, y_train, y_test = data_preparation_for_pipeline(X_train, X_test, y_train, y_test)
 
+    print(dict(X_train_clean.dtypes))
     return X_train_clean, X_test_clean, y_train, y_test
 
 
@@ -131,9 +129,7 @@ if __name__ == '__main__':
 
     X_train, X_test, y_train, y_test = load_train_test_posted_wait_times(args.input)
     X_train_clean, X_test_clean, y_train, y_test = data_preparation_for_pipeline(X_train, X_test, y_train, y_test)
-    print(list(X_train_clean.columns))
-    print("-------------")
-    print(list(X_test_clean.columns))
+    print(dict(X_train_clean.dtypes))
     print("WRITING FILES")
     for idx, file in enumerate([X_train_clean, X_test_clean, y_train, y_test]):
         print(file.shape)
