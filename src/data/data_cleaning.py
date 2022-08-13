@@ -125,6 +125,20 @@ def dateCleaning(df):
 
 
 def combineCovidData(rideData):
+    """
+        Extract & combine covid-data (number of daily US new cases) into existing park metadata by day
+
+        Parameters
+        ----------
+        rideData : DataFrame
+            dataframe with wait times & metadata
+
+        Returns
+        -------
+        rides_with_covid: Dataframe
+            updated dataframe with appended covid metrics
+
+    """
     covidData = pd.read_csv("data/raw/United_States_COVID-19_Cases_and_Deaths_by_State_over_Time.csv")
 
     covidData = covidData.groupby("DATE")["new_case"].sum().reset_index()
@@ -154,7 +168,7 @@ def combineMetadataAndUpdate(ride_files, ride_names):
         combined_data : DataFrame
             Returns updated dataframe with all rides merged with their respective daily park & ride metadata
 
-        """
+    """
     park_metadata = pd.read_csv("data/raw/park_metadata.csv")
     data_world = pd.read_excel("data/raw/WDW_Ride_Data_DW.xlsx")
     mk_dw = data_world[data_world["Park_location"] == "MK"]
@@ -184,29 +198,6 @@ def combineMetadataAndUpdate(ride_files, ride_names):
     del all_rides, park_metadata
 
     return combined_data
-
-
-def seperateYearsAndWriteToCSV(df, year):
-    """
-        Separates full dataset into 2 month increments and writes to CSV files in data/interim
-
-        Parameters
-        ----------
-        df : dataframe
-            dataframe with all data for all 21 rides
-
-        year : int
-            year of data to parse
-
-        Returns
-        -------
-        None
-            Writes data to data/interim
-
-    """
-
-    df_year = df[df['date'].dt.year == year]
-    df_year.to_csv(f'data/interim/rideData{year}.csv', compression='gzip')
 
 
 def cleanStringData(df, cols):
@@ -311,12 +302,32 @@ def convertHours(x):
 
 
 def setVarianceThreshold(X_train, X_test, threshold, data_type):
-    X = pd.concat([X_train, X_test], axis=0)
+    """
+        Removing columns below variance threshold limit for a given datatype
 
-    X_dtype = X.select_dtypes(include=[data_type]).reset_index(drop=True)
+        Parameters
+        ----------
+        X_train : dataframe
+            Training features for model
+        X_test : dataframe
+            Testing features for model
+        threshold: Integer
+            Threshold to set for variance
+        data_type : string
+            Specifies which datatype columns to pass into the variance threshold object
+
+        Returns
+        -------
+        X_train, X_test
+            Resulting train/test feature sets after variance threshold tuning
+    """
+
+    # X = pd.concat([X_train, X_test], axis=0)
+
+    X_dtype = X_train.select_dtypes(include=[data_type]).reset_index(drop=True)
 
     var_thr = VarianceThreshold(threshold=threshold)  # Removing both constant and quasi-constant
-    var_thr.fit(X_dtype)
+    var_thr.fit(X_train)
 
     concol = [column for column in X_dtype.columns
               if column not in X_dtype.columns[var_thr.get_support()]]
@@ -333,7 +344,7 @@ def setVarianceThreshold(X_train, X_test, threshold, data_type):
     return X_train, X_test
 
 
-def trainTestSplit(year):
+def trainTestSplit(input_dir, year):
     """
             Reads in 1 year of clean data, splits into train/test for actual/posted wait times, respectively
 
@@ -348,7 +359,7 @@ def trainTestSplit(year):
                Returns X/y train/test for actual and posted wait times respectively
     """
 
-    rideData = pd.read_csv(f'data/interim/RideData{year}Weather.csv', compression='gzip', dtype=dtypes, parse_dates=parse_dates)
+    rideData = pd.read_csv(f'{input_dir}/RideData{year}Weather.csv', compression='gzip', dtype=dtypes, parse_dates=parse_dates)
     rideData = rideData.dropna(subset=park_metadata_cols, how='all', axis=0)
 
     rideDataActual = rideData[~np.isnan(rideData["SACTMIN"])]
@@ -374,15 +385,28 @@ def trainTestSplit(year):
                [X_train_posted, X_test_posted, y_train_posted, y_test_posted]
 
 
-def encodeTrainAndTest(posted=True):
+def encodeTrainAndTest(input_dir, posted=True):
+    """
+        Put it all together to clean train and test datasets
+
+        Parameters
+        ----------
+        input_dir : String
+            Directory where input data is located
+
+        Returns
+        -------
+        X_train, X_test, y_train, y_test: DataFrames
+           Cleaned, encoded, & combined dataframes for train/test features & targets
+    """
     allYearsTrain_X, allYearsTrain_y, allYearsTest_X, allYearsTest_y = [], [], [], []
 
     for year in range(2015, 2022):
         print(f"YEAR {year}")
         if posted:
-            data = trainTestSplit(year)[1]
+            data = trainTestSplit(input_dir, year)[1]
         else:
-            data = trainTestSplit(year)[0]
+            data = trainTestSplit(input_dir, year)[0]
 
         allYearsTrain_X.append(data[0])
         allYearsTest_X.append(data[1])
@@ -396,6 +420,7 @@ def encodeTrainAndTest(posted=True):
 
     del allYearsTrain_X, allYearsTest_X, allYearsTrain_y, allYearsTest_y
 
+    # parse time columns to datetime objects
     cleanX = []
     for df in [X_train, X_test]:
         for time_col in parse_times:
@@ -412,18 +437,29 @@ def encodeTrainAndTest(posted=True):
         dfClean = cleanStringData(df, categoricalCols)
         cleanX.append(dfClean)
 
+    # one hot encoded the categorical columns
     X_train, X_test = oneHotEncoding(cleanX[0], cleanX[1], categoricalCols)
 
     del dfClean, cleanX
 
+    # set the variance threshold for training and testing data for boolean and numeric columsn
     X_train, X_test = setVarianceThreshold(X_train, X_test, 0.05, np.number)
-    X_train, X_test = setVarianceThreshold(X_train, X_test, 0, "bool")
+    X_train, X_test = setVarianceThreshold(X_train, X_test, 0.001, "bool")
 
     return X_train, X_test, y_train, y_test
 
 
 if __name__ == '__main__':
-    with open("data/interim/dtypes.json") as json_file:
+    import argparse
+
+    # parse input and output args
+    parser = argparse.ArgumentParser()
+    parser.add_argument('input', help="Interim Data Directory")
+    parser.add_argument('output', help="Processed Data Directory")
+    args = parser.parse_args()
+
+    # open dtypes to specify when loading CSVs
+    with open(f"{args.input}/dtypes.json") as json_file:
         dtypes = json.load(json_file)
 
     combined_data = combineMetadataAndUpdate(ride_files, ride_names)
@@ -435,36 +471,36 @@ if __name__ == '__main__':
     for postedActual in ["posted", "actual"]:
         if postedActual == "posted":
             print("posted")
-            X_train, X_test, y_train, y_test = encodeTrainAndTest(posted=True)
+            X_train, X_test, y_train, y_test = encodeTrainAndTest(args.input, posted=True)
+            # combing x and y together so that we keep the features and targets together
+            # when splitting into smaller files
             X_train["POSTED_WAIT"] = y_train
             X_test["POSTED_WAIT"] = y_test
 
             for year in range(2015, 2022):
                 print(f"WRITING {year}")
-                # combing x and y together so that we keep the features and targets together
-                # when splitting into smaller files
-
+                # write to year based files so that the data will fit on GitHub
                 X_train[X_train["date"].dt.year == year].to_csv(
-                    f"data/processed/All_train_postedtimes{year}.csv",
+                    f"{args.output}/All_train_postedtimes{year}.csv",
                     index=False, compression='gzip')
 
                 X_test[X_test["date"].dt.year == year].to_csv(
-                    f"data/processed/All_test_postedtimes{year}.csv",
+                    f"{args.output}/All_test_postedtimes{year}.csv",
                     index=False, compression='gzip')
 
             del X_train, y_train, X_test, y_test
         else:
             X_train, X_test, y_train, y_test = encodeTrainAndTest(posted=False)
 
-            X_train.to_csv("data/processed/Xtrain_actualtimes.csv", compression='gzip')
+            X_train.to_csv(f"{args.output}/Xtrain_actualtimes.csv", compression='gzip')
             del X_train
 
-            X_test.to_csv("data/processed/Xtest_actualtimes.csv", compression='gzip')
+            X_test.to_csv(f"{args.output}/Xtest_actualtimes.csv", compression='gzip')
             del X_test
 
-            y_train.to_csv("data/processed/ytrain_actualtimes.csv", compression='gzip')
+            y_train.to_csv(f"{args.output}/ytrain_actualtimes.csv", compression='gzip')
             del y_train
 
-            y_test.to_csv("data/processed/ytest_actualtimes.csv", compression='gzip')
+            y_test.to_csv(f"{args.output}/ytest_actualtimes.csv", compression='gzip')
             del y_test
 
