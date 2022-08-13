@@ -7,7 +7,7 @@ def weatherData(Ride_data, year):
     Ride_data = Ride_data[Ride_data["datetime"].dt.year == year]
 
     # for file in glob.glob("* Weather.csv"):
-    Weather_data = pd.read_csv(f'data/interim/{year} Weather.csv')
+    Weather_data = pd.read_csv(f'data/interim/{year}Weather.csv')
     Weather_data = Weather_data[['DATE', 'SOURCE', 'REPORT_TYPE', 'CALL_SIGN', 'QUALITY_CONTROL', 'WND', 'CIG',
                                  'VIS', 'TMP', 'DEW', 'SLP', "AT1"]]
 
