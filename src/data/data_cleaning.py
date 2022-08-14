@@ -326,8 +326,8 @@ def setVarianceThreshold(X_train, X_test, threshold, data_type):
 
     X_dtype = X_train.select_dtypes(include=[data_type]).reset_index(drop=True)
 
-    var_thr = VarianceThreshold(threshold=threshold)  # Removing both constant and quasi-constant
-    var_thr.fit(X_train)
+    var_thr = VarianceThreshold(threshold=threshold)
+    var_thr.fit(X_dtype)
 
     concol = [column for column in X_dtype.columns
               if column not in X_dtype.columns[var_thr.get_support()]]
@@ -442,7 +442,7 @@ def encodeTrainAndTest(input_dir, posted=True):
 
     del dfClean, cleanX
 
-    # set the variance threshold for training and testing data for boolean and numeric columsn
+    # set the variance threshold for training and testing data for boolean and numeric columns
     X_train, X_test = setVarianceThreshold(X_train, X_test, 0.05, np.number)
     X_train, X_test = setVarianceThreshold(X_train, X_test, 0.001, "bool")
 
@@ -490,7 +490,7 @@ if __name__ == '__main__':
 
             del X_train, y_train, X_test, y_test
         else:
-            X_train, X_test, y_train, y_test = encodeTrainAndTest(posted=False)
+            X_train, X_test, y_train, y_test = encodeTrainAndTest(args.input, posted=False)
 
             X_train.to_csv(f"{args.output}/Xtrain_actualtimes.csv", compression='gzip')
             del X_train
@@ -503,4 +503,3 @@ if __name__ == '__main__':
 
             y_test.to_csv(f"{args.output}/ytest_actualtimes.csv", compression='gzip')
             del y_test
-

@@ -84,3 +84,16 @@ target/
 
 # Mypy cache
 .mypy_cache/
+
+# Final data - too large for Git (can be reproduced locally by running pipeline)
+# exclude all
+data/final/*
+
+# exception to the rule - keep folder as placeholder for Makefile
+!data/final/.gitkeep
+
+# Ignore pickles
+*.pkl.gz
+**/*.pkl.gz
+*.pkl
+**/*.pkl
