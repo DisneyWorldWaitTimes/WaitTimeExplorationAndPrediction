@@ -1,5 +1,7 @@
 # Once Upon a Wait Time: Modeling Disney World Ride Wait Times with Machine Learning
 
+![](https://upload.wikimedia.org/wikipedia/commons/6/6d/Magic_Kingdom_Hub.jpg)
+
 Contributors: [Zealand Cooley](https://github.com/zealandcooley2), [Kendall Dyke](https://github.com/kendalldyke14), & [Zhou Wang](https://github.com/ZhouWangUMich)
 
 ## Project Overview
