@@ -10,7 +10,7 @@ This project builds and trains a regression model to predict the posted wait tim
 
 ### Disney World Wait Time Data & Park Information
 
-We gathered our wait time data for each ride and the respective park day metadata (Open/Close times, parades, shows, fireworks, capacity, etc.) from [TouringPlans](https://touringplans.com/walt-disney-world/crowd-calendar#DataSets) who has kindly made this information available for academic project.
+We gathered our wait time data for each ride and the respective park day metadata (Open/Close times, parades, shows, fireworks, capacity, etc.) from [TouringPlans](https://touringplans.com/walt-disney-world/crowd-calendar#DataSets) who has kindly made this information available for academic projects.
 
 We gathered additional metadata about each ride specifically from Lynne Passanisi on [data.world](https://data.world/lynne588/walt-disney-world-ride-data). A few fields like *age of the ride* were out of date. We overcame this limitation by dynamically calculating the age of the ride on each day when appending to our wait time dataset so that we had the accurate age of the ride on that given day in the park.
 
