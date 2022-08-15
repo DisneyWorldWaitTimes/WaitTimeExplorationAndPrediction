@@ -4,6 +4,8 @@ Contributors: [Zealand Cooley](https://github.com/zealandcooley2), [Kendall Dyke
 
 ## Project Overview
 
+This project builds and trains a regression model to predict the posted wait times for 20 rides in Walt Disney World's Magic Kingdom. We also focus on determining which features are most important to the model and therefore may influence wait times at Magic Kingdom.
+
 ## Data Sources
 
 ### Disney World Wait Time Data & Park Information
