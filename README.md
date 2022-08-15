@@ -52,6 +52,13 @@ We have also developed a [Makefile](https://github.com/DisneyWorldWaitTimes/Wait
 ```
 {'Mean Absolute Error (MAE)': 40.45313127097203, 'Mean Squared Error (MSE)': 22577.2899065588, 'R-Squared': 0.7326651661948325}
 ```
+### Adding More Rides Into Scope
+
+**To add a new ride into the pipeline:** 
+1. Add the respective CSV file from TouringPlans to [data/raw](https://github.com/DisneyWorldWaitTimes/WaitTimeExplorationAndPrediction/tree/main/data/raw)
+2. Add the file name to ```ride_files``` list in [helper.py](https://github.com/DisneyWorldWaitTimes/WaitTimeExplorationAndPrediction/blob/main/src/data/helper.py)
+3. Add the ride name to ```ride_names``` in the same file as step 2
+4. Re-run the [Makefile](https://github.com/DisneyWorldWaitTimes/WaitTimeExplorationAndPrediction/blob/main/Makefile) to re-train the model with the new ride in scope
 
 ## Our Results
 
@@ -75,3 +82,4 @@ As we were limited to an 8 week capstone course for this project, we could not p
   * This would likely require a live weather API for daily Magic Kingdom weather, an unsupervised learning model to predict capacity on the current day, and live data about the park hours, events, etc. (which could likely be scraped from the Disney website).
 * Does Disney inflate wait times? Build a user-facing model for actual wait times and compare with predicted wait times.
 * Additional feature selection & tuning to improve upon current model 
+* Individual models for each ride may help improve model performance.
