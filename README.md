@@ -54,6 +54,13 @@ We have also developed a [Makefile](https://github.com/DisneyWorldWaitTimes/Wait
 ```
 {'Mean Absolute Error (MAE)': 40.45313127097203, 'Mean Squared Error (MSE)': 22577.2899065588, 'R-Squared': 0.7326651661948325}
 ```
+
+Each Python script for the steps in the Makefile can be found in [src/](https://github.com/DisneyWorldWaitTimes/WaitTimeExplorationAndPrediction/tree/main/src)
+* [```data_cleaning.py```](src/data/data_cleaning.py) : Aggregates the data from each source & writes combined data files with initial data cleaning efforts to CSV
+* [```feature_engineering.py```](src/models/feature_engineering.py) : Takes in the results of ```data_cleaning.py```, parses datetime information to integer features, and sorts data in preparation for imputation in the sklearn pipeline
+* [```pipeline_train.py```](src/models/pipeline_train.py) : Takes results of ```feature_engineering.py``` and completes, data imputation, key event hour parsing from HH:MM to integer hour (hour of parades, shows, open times, close times, etc.), trains model on training dataset, and writes resulting pipeline to Pickle file
+* [```pipeline_predict.py```](src/models/pipeline_predict.py) : This takes in the Pickle sklearn pipeline created in ```pipeline_train.py``` and applies it to the test dataset. This results in a dictionary with test metrics for the resulting model
+
 ### Adding More Rides Into Scope
 
 **To add a new ride into the pipeline:** 
