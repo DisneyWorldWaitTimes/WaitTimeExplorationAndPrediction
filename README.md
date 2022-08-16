@@ -49,7 +49,7 @@ pip install -r requirements.txt
 
 You can interact with our model & sklearn pipeline independently in [notebooks/RegressionPipelineAndResults.ipynb](https://github.com/DisneyWorldWaitTimes/WaitTimeExplorationAndPrediction/blob/main/notebooks/RegressionPipelineAndResults.ipynb)
 
-### Productionizable Makefile Pipeline
+### End-to-End Pipeline (Makefile)
 
 We have also developed a [Makefile](https://github.com/DisneyWorldWaitTimes/WaitTimeExplorationAndPrediction/blob/main/Makefile) pipeline that will run with command ```make``` in your CLI. This Makefile will take the raw data all the way through the cleaning, feature engineering, training & prediction steps. Upon completion, it will print a dictionary in the following format to show how the model did against the test dataset.
 
