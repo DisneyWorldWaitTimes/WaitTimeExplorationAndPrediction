@@ -27,7 +27,9 @@ This dataset can be fairly nondescript in its naming scheme and formatting so we
 
 ### Exploratory Data Analysis
 
-Once all the data was collected, we also spent some time in creating a Pandas Profiling Report using the ```pandas-profiling``` library. This library expands on the basic ```df.describe()``` feature of pandas to display more information for quick data analysis. Through this tool, we can quickly learn at a glance which variables are correlated with each other and which ones we could easily discard due to some columns containing only a constant. What we found through this was that there was high correlation scores amongst many of the variables. A lot of these relations make sense, such as ```Temperature (C)``` and ```WEEKOFYEAR (Week of the year)```
+Once all the data was collected, we also spent some time in creating a Pandas Profiling Report using the ```pandas-profiling``` library. This library expands on the basic ```df.describe()``` feature of pandas to display more information for quick data analysis. Through this tool, we can quickly learn at a glance which variables are correlated with each other and which ones we could easily discard due to some columns containing only a constant. ![image](https://user-images.githubusercontent.com/101060695/185017978-8a905de1-fcde-457e-8e69-c74610dde0fb.png)
+
+What we found through this was that there was high correlation scores amongst many of the variables. A lot of these relations make sense, such as ```Temperature (C)``` and ```WEEKOFYEAR (Week of the year)```
 ![image](https://user-images.githubusercontent.com/101060695/185015081-5f57f782-e4a9-4087-988e-9f84c00dc5b1.png)
 
 
