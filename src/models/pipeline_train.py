@@ -66,7 +66,6 @@ def pipeline_train(X_train, y_train):
                 Fitted model with transformed data
         """
     preprocessor = make_column_transformer(
-        # (VarianceThreshold(threshold=0.001), selector(dtype_include="bool")),
         (RobustScaler(), selector(dtype_include=np.number)), remainder='passthrough')
 
     pipeline = Pipeline(
